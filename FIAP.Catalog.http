@@ -1,0 +1,37 @@
+@FIAPCatalog_HostAddress = http://localhost:5168
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjhiMDViMjQ0LTY4N2QtNDFhNS05OTgzLTA5Y2YwMDJjYmUxNCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6ImFkbWluQGNsb3VkZ2FtZXMuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJleHAiOjE3NzMxODkxMDIsImlzcyI6IkNsb3VkR2FtZXMuVXNlcnMiLCJhdWQiOiJDbG91ZEdhbWVzLlVzZXJzLkNsaWVudCJ9.IJDvCfcVNNt2nSQVsQ-rU3PWmLCm-KezQmznWE1mxAM
+
+GET {{FIAPCatalog_HostAddress}}/api/games
+Accept: application/json
+Authorization: {{token}}
+
+###
+
+POST {{FIAPCatalog_HostAddress}}/api/games
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+    "name": "New Game",
+    "description": "A new game",
+    "price": 15.99
+}
+
+###
+
+GET {{FIAPCatalog_HostAddress}}/api/games/1
+Accept: application/json
+Authorization: {{token}}
+
+###
+
+POST {{FIAPCatalog_HostAddress}}/api/games/purchase
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+    "userId": 1,
+    "gameId": 1
+}
+
+###
