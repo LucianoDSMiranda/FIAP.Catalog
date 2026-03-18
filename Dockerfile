@@ -2,22 +2,22 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copia tudo
+# Copia o csproj
+COPY *.csproj ./
+
+# Restore
+RUN dotnet restore
+
+# Copia o restante
 COPY . .
 
-# Restaura e publica
-RUN dotnet restore
-RUN dotnet publish -c Release -o out
+# Publish
+RUN dotnet publish -c Release -o /app/publish
 
 # ---------- RUNTIME ----------
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
-COPY --from=build /app/out .
-
-EXPOSE 8080
-
-ENV ASPNETCORE_URLS=http://+:8080
-ENV DOTNET_RUNNING_IN_CONTAINER=true
+COPY --from=build /app/publish .
 
 ENTRYPOINT ["dotnet", "FIAP.Catalog.dll"]
