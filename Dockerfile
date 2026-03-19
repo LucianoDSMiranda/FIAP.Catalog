@@ -18,6 +18,8 @@ RUN dotnet publish -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+
 COPY --from=build /app/publish .
 
 ENTRYPOINT ["dotnet", "FIAP.Catalog.dll"]
