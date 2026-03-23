@@ -4,6 +4,7 @@ using FIAP.Catalog.Data;
 using MassTransit;
 using FIAP.Messages;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace FIAP.Catalog.Controllers;
 
@@ -64,5 +65,13 @@ public class GamesController : ControllerBase
         });
 
         return Ok();
+    }
+
+    [HttpGet("user/{userId}")]
+    public async Task<ActionResult<IEnumerable<Game>>> GetUserGames(Guid userId)
+    {
+        var gameIds = await _context.UserGames.Where(ug => ug.UserId == userId).Select(ug => ug.GameId).ToListAsync();
+        var games = await _context.Games.Where(g => gameIds.Contains(g.Id)).ToListAsync();
+        return Ok(games);
     }
 }

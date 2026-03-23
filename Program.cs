@@ -5,12 +5,24 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Collections.Generic;
 using FIAP.Messages;
 using FIAP.Catalog.Consumers;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+Console.WriteLine("PROGRAM NOVA DO CATALOG");
+Console.WriteLine($"RABBITMQ_HOST={Environment.GetEnvironmentVariable("RABBITMQ_HOST")}");
+
+var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "rabbitmq-service";
+
+var paymentProcessedQueue = Environment.GetEnvironmentVariable("PAYMENT_PROCESSED_QUEUE") ?? "PaymentProcessedEvent";
+
+var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "CloudGames.Users";
+
+var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "CloudGames.Users.Client";
+
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? "SUPER_SECRET_KEY_123456789_123456789";
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -45,7 +57,9 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
 builder.Services.AddControllers();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -55,18 +69,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtSecret))
         };
     });
-builder.Services.AddAuthorization();
-builder.Services.AddDbContext<CatalogDbContext>(options => options.UseSqlite("Data Source=catalog.db"));
 
-var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
+builder.Services.AddAuthorization();
+
+builder.Services.AddDbContext<CatalogDbContext>(options =>
+    options.UseSqlite("Data Source=catalog.db"));
+
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<PaymentProcessedEventConsumer>();
+
     x.UsingRabbitMq((context, cfg) =>
     {
         cfg.Host(rabbitHost, "/", h =>
@@ -74,10 +91,11 @@ builder.Services.AddMassTransit(x =>
             h.Username("guest");
             h.Password("guest");
         });
+
         cfg.Message<OrderPlacedEvent>(x => x.SetEntityName("OrderPlacedEvent"));
         cfg.Message<PaymentProcessedEvent>(x => x.SetEntityName("PaymentProcessedEvent"));
 
-        cfg.ReceiveEndpoint("payment-processed-queue", e =>
+        cfg.ReceiveEndpoint(paymentProcessedQueue, e =>
         {
             e.ConfigureConsumer<PaymentProcessedEventConsumer>(context);
         });

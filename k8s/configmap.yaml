@@ -1,0 +1,12 @@
+﻿apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: catalog-config
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  RABBITMQ_HOST: "rabbitmq-service"
+  PAYMENT_PROCESSED_QUEUE: "payment-processed-queue"
+  ORDER_PLACED_ENTITY_NAME: "OrderPlacedEvent"
+  PAYMENT_PROCESSED_ENTITY_NAME: "PaymentProcessedEvent"
+  JWT_ISSUER: "CloudGames.Users"
+  JWT_AUDIENCE: "CloudGames.Users.Client"
