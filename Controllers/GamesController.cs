@@ -29,7 +29,7 @@ public class GamesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public ActionResult<Game> GetGame(int id)
+    public ActionResult<Game> GetGame(Guid id)
     {
         var game = _context.Games.Find(id);
         if (game == null)
