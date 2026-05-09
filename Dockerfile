@@ -1,17 +1,18 @@
 # ---------- BUILD ----------
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copia o csproj
-COPY *.csproj ./
+COPY ["FIAP.Catalog.API/FIAP.Catalog.API.csproj", "FIAP.Catalog.API/"]
+COPY ["FIAP.Catalog.Application/FIAP.Catalog.Application.csproj", "FIAP.Catalog.Application/"]
+COPY ["FIAP.Catalog.Domain/FIAP.Catalog.Domain.csproj", "FIAP.Catalog.Domain/"]
+COPY ["FIAP.Catalog.Infrastructure/FIAP.Catalog.Infrastructure.csproj", "FIAP.Catalog.Infrastructure/"]
 
-# Restore
-RUN dotnet restore
+RUN dotnet restore "FIAP.Catalog.API/FIAP.Catalog.API.csproj"
 
-# Copia o restante
 COPY . .
 
-# Publish
+WORKDIR "/src/FIAP.Catalog.API"
+
 RUN dotnet publish -c Release -o /app/publish
 
 # ---------- RUNTIME ----------
@@ -22,4 +23,6 @@ ENV DOTNET_RUNNING_IN_CONTAINER=true
 
 COPY --from=build /app/publish .
 
-ENTRYPOINT ["dotnet", "FIAP.Catalog.dll"]
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "FIAP.Catalog.API.dll"]

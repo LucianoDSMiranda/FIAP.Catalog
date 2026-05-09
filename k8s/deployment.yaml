@@ -1,4 +1,4 @@
-﻿apiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: catalog-api
@@ -24,45 +24,58 @@ spec:
                 configMapKeyRef:
                   name: catalog-config
                   key: ASPNETCORE_ENVIRONMENT
-
             - name: RABBITMQ_HOST
               valueFrom:
                 configMapKeyRef:
                   name: catalog-config
                   key: RABBITMQ_HOST
-
             - name: PAYMENT_PROCESSED_QUEUE
               valueFrom:
                 configMapKeyRef:
                   name: catalog-config
                   key: PAYMENT_PROCESSED_QUEUE
-
             - name: JWT_ISSUER
               valueFrom:
                 configMapKeyRef:
                   name: catalog-config
                   key: JWT_ISSUER
-
             - name: JWT_AUDIENCE
               valueFrom:
                 configMapKeyRef:
                   name: catalog-config
                   key: JWT_AUDIENCE
-
-            - name: JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: catalog-secret
-                  key: JWT_SECRET
-
             - name: ORDER_PLACED_ENTITY_NAME
               valueFrom:
                 configMapKeyRef:
                   name: catalog-config
                   key: ORDER_PLACED_ENTITY_NAME
-
             - name: PAYMENT_PROCESSED_ENTITY_NAME
               valueFrom:
                 configMapKeyRef:
                   name: catalog-config
                   key: PAYMENT_PROCESSED_ENTITY_NAME
+            - name: MongoSettings__ConnectionString
+              valueFrom:
+                configMapKeyRef:
+                  name: catalog-config
+                  key: MongoSettings__ConnectionString
+            - name: MongoSettings__Database
+              valueFrom:
+                configMapKeyRef:
+                  name: catalog-config
+                  key: MongoSettings__Database
+            - name: Redis__ConnectionString
+              valueFrom:
+                configMapKeyRef:
+                  name: catalog-config
+                  key: Redis__ConnectionString
+            - name: Redis__LogStream
+              valueFrom:
+                configMapKeyRef:
+                  name: catalog-config
+                  key: Redis__LogStream
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-secret
+                  key: JWT_SECRET
