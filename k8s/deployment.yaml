@@ -79,3 +79,8 @@ spec:
                 secretKeyRef:
                   name: catalog-secret
                   key: JWT_SECRET
+            - name: SWAGGER_GATEWAY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: catalog-config
+                  key: SWAGGER_GATEWAY_URL
