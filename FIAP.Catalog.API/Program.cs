@@ -168,9 +168,11 @@ try
     {
         c.PreSerializeFilters.Add((swagger, httpReq) =>
         {
+            var host   = httpReq.Headers["X-Forwarded-Host"].FirstOrDefault() ?? httpReq.Host.Value;
+            var scheme = httpReq.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? httpReq.Scheme;
             swagger.Servers = new List<OpenApiServer>
             {
-                new() { Url = $"{httpReq.Scheme}://{httpReq.Host}/catalog" }
+                new() { Url = $"{scheme}://{host}/catalog" }
             };
         });
     });
