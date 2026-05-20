@@ -164,10 +164,20 @@ try
 
     app.UseHttpMetrics();
 
-    app.UseSwagger();
+    app.UseSwagger(c =>
+    {
+        c.PreSerializeFilters.Add((swagger, httpReq) =>
+        {
+            swagger.Servers = new List<OpenApiServer>
+            {
+                new() { Url = $"{httpReq.Scheme}://{httpReq.Host}/catalog" }
+            };
+        });
+    });
+
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "FIAP.CATALOG API v1");
+        c.SwaggerEndpoint("swagger/v1/swagger.json", "FIAP.CATALOG API v1");
         c.RoutePrefix = string.Empty;
     });
 
