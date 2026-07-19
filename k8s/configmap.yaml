@@ -14,4 +14,5 @@ data:
   MongoSettings__Database: "cloudgames_catalog"
   Redis__ConnectionString: "redis-service:6379"
   Redis__LogStream: "cloudgames:logs"
+  Elasticsearch__Url: "http://elasticsearch-service:9200"
   SWAGGER_GATEWAY_URL: "http://localhost:8000"

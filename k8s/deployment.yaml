@@ -74,11 +74,26 @@ spec:
                 configMapKeyRef:
                   name: catalog-config
                   key: Redis__LogStream
+            - name: Elasticsearch__Url
+              valueFrom:
+                configMapKeyRef:
+                  name: catalog-config
+                  key: Elasticsearch__Url
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: catalog-secret
                   key: JWT_SECRET
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-secret
+                  key: RABBITMQ_USERNAME
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-secret
+                  key: RABBITMQ_PASSWORD
             - name: SWAGGER_GATEWAY_URL
               valueFrom:
                 configMapKeyRef:

@@ -1,10 +1,13 @@
+using Elastic.Clients.Elasticsearch;
 using FIAP.Catalog.API.Logging;
 using FIAP.Catalog.Application.Abstractions.Repositories;
+using FIAP.Catalog.Application.Abstractions.Search;
 using FIAP.Catalog.Application.UseCases;
 using FIAP.Catalog.Infrastructure.Messaging;
 using FIAP.Catalog.Infrastructure.Persistence;
 using FIAP.Catalog.Infrastructure.Persistence.Mappings;
 using FIAP.Catalog.Infrastructure.Repositories;
+using FIAP.Catalog.Infrastructure.Search;
 using FIAP.Messages;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,7 +29,23 @@ try
     var paymentProcessedQueue = Environment.GetEnvironmentVariable("PAYMENT_PROCESSED_QUEUE") ?? "PaymentProcessedEvent";
     var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "CloudGames.Users";
     var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "CloudGames.Users.Client";
-    var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? "SUPER_SECRET_KEY_123456789_123456789";
+
+    var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
+                    ?? throw new InvalidOperationException("JWT_SECRET não configurado.");
+
+    var rabbitUsername = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME")
+                         ?? throw new InvalidOperationException("RABBITMQ_USERNAME não configurado.");
+
+    var rabbitPassword = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD")
+                         ?? throw new InvalidOperationException("RABBITMQ_PASSWORD não configurado.");
+
+    var redisConnection = Environment.GetEnvironmentVariable("Redis__ConnectionString")
+                          ?? builder.Configuration["Redis:ConnectionString"]
+                          ?? "redis-service:6379";
+
+    var elasticsearchUrl = Environment.GetEnvironmentVariable("Elasticsearch__Url")
+                           ?? builder.Configuration["Elasticsearch:Url"]
+                           ?? "http://elasticsearch-service:9200";
 
     Log.Information("RabbitMQ Host: {RabbitHost}", rabbitHost);
 
@@ -116,6 +135,24 @@ try
 
     #endregion
 
+    #region CACHE (Redis)
+
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+    });
+
+    #endregion
+
+    #region SEARCH (Elasticsearch)
+
+    var elasticSettings = new ElasticsearchClientSettings(new Uri(elasticsearchUrl))
+        .DefaultIndex("games");
+    builder.Services.AddSingleton(new ElasticsearchClient(elasticSettings));
+    builder.Services.AddScoped<IGameSearchService, GameSearchService>();
+
+    #endregion
+
     #region REPOSITORIES
 
     builder.Services.AddScoped<IGameRepository, GameRepository>();
@@ -128,6 +165,8 @@ try
     builder.Services.AddScoped<ListGamesUseCase>();
     builder.Services.AddScoped<GetGameByIdUseCase>();
     builder.Services.AddScoped<CreateGameUseCase>();
+    builder.Services.AddScoped<UpdateGameUseCase>();
+    builder.Services.AddScoped<SearchGamesUseCase>();
     builder.Services.AddScoped<PurchaseGameUseCase>();
     builder.Services.AddScoped<ListUserGamesUseCase>();
     builder.Services.AddScoped<RegisterUserGameUseCase>();
@@ -144,8 +183,8 @@ try
         {
             cfg.Host(rabbitHost, "/", h =>
             {
-                h.Username("guest");
-                h.Password("guest");
+                h.Username(rabbitUsername);
+                h.Password(rabbitPassword);
             });
 
             cfg.Message<OrderPlacedEvent>(x => x.SetEntityName("OrderPlacedEvent"));

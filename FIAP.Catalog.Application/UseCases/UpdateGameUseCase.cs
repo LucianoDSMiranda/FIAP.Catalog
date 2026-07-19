@@ -6,18 +6,18 @@ using Microsoft.Extensions.Logging;
 
 namespace FIAP.Catalog.Application.UseCases;
 
-public class CreateGameUseCase
+public class UpdateGameUseCase
 {
     private readonly IGameRepository _repository;
     private readonly IGameSearchService _search;
     private readonly IDistributedCache _cache;
-    private readonly ILogger<CreateGameUseCase> _logger;
+    private readonly ILogger<UpdateGameUseCase> _logger;
 
-    public CreateGameUseCase(
+    public UpdateGameUseCase(
         IGameRepository repository,
         IGameSearchService search,
         IDistributedCache cache,
-        ILogger<CreateGameUseCase> logger)
+        ILogger<UpdateGameUseCase> logger)
     {
         _repository = repository;
         _search = search;
@@ -25,16 +25,20 @@ public class CreateGameUseCase
         _logger = logger;
     }
 
-    public async Task<Game> ExecuteAsync(Game game)
+    public async Task<Game?> ExecuteAsync(Guid id, Game game)
     {
-        if (game.Id == Guid.Empty)
-            game.Id = Guid.NewGuid();
+        var existing = await _repository.GetByIdAsync(id);
+        if (existing is null)
+            return null;
 
-        _logger.LogInformation("[Application][CreateGameUseCase] Creating game {GameId} {Name}", game.Id, game.Name);
-        await _repository.AddAsync(game);
+        game.Id = id;
+
+        _logger.LogInformation("[Application][UpdateGameUseCase] Updating game {GameId}", id);
+        await _repository.UpdateAsync(game);
 
         await _search.IndexAsync(game);
         await _cache.RemoveAsync("catalog:games:all");
+        await _cache.RemoveAsync($"catalog:games:{id}");
 
         return game;
     }

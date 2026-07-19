@@ -42,4 +42,10 @@ public class GameRepository : IGameRepository
         _logger.LogInformation("[Infrastructure][GameRepository] Inserting game {GameId}", game.Id);
         await _context.Games.InsertOneAsync(game);
     }
+
+    public async Task UpdateAsync(Game game)
+    {
+        _logger.LogInformation("[Infrastructure][GameRepository] Updating game {GameId}", game.Id);
+        await _context.Games.ReplaceOneAsync(g => g.Id == game.Id, game);
+    }
 }

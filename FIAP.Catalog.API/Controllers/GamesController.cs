@@ -13,6 +13,8 @@ public class GamesController : ControllerBase
     private readonly ListGamesUseCase _listGames;
     private readonly GetGameByIdUseCase _getGameById;
     private readonly CreateGameUseCase _createGame;
+    private readonly UpdateGameUseCase _updateGame;
+    private readonly SearchGamesUseCase _searchGames;
     private readonly PurchaseGameUseCase _purchaseGame;
     private readonly ListUserGamesUseCase _listUserGames;
 
@@ -20,12 +22,16 @@ public class GamesController : ControllerBase
         ListGamesUseCase listGames,
         GetGameByIdUseCase getGameById,
         CreateGameUseCase createGame,
+        UpdateGameUseCase updateGame,
+        SearchGamesUseCase searchGames,
         PurchaseGameUseCase purchaseGame,
         ListUserGamesUseCase listUserGames)
     {
         _listGames = listGames;
         _getGameById = getGameById;
         _createGame = createGame;
+        _updateGame = updateGame;
+        _searchGames = searchGames;
         _purchaseGame = purchaseGame;
         _listUserGames = listUserGames;
     }
@@ -34,6 +40,13 @@ public class GamesController : ControllerBase
     public async Task<ActionResult<IEnumerable<Game>>> GetGames()
     {
         var games = await _listGames.ExecuteAsync();
+        return Ok(games);
+    }
+
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<Game>>> SearchGames([FromQuery] string q)
+    {
+        var games = await _searchGames.ExecuteAsync(q);
         return Ok(games);
     }
 
@@ -50,6 +63,14 @@ public class GamesController : ControllerBase
     {
         var created = await _createGame.ExecuteAsync(game);
         return CreatedAtAction(nameof(GetGame), new { id = created.Id }, created);
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<Game>> UpdateGame(Guid id, Game game)
+    {
+        var updated = await _updateGame.ExecuteAsync(id, game);
+        if (updated == null) return NotFound();
+        return Ok(updated);
     }
 
     [HttpPost("purchase")]
