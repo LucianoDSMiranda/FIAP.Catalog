@@ -56,7 +56,7 @@ try
     {
         c.SwaggerDoc("v1", new OpenApiInfo
         {
-            Title = "FIAP.Catalog API",
+            Title = "Catalog API",
             Version = "v1"
         });
 
